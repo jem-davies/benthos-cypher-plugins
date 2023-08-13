@@ -86,7 +86,8 @@ func (neo *Neo4j) Write(ctx context.Context, msg *service.Message) error {
 	gocsv.UnmarshalString(collateTriples, &SORs)
 
 	for _, SOR := range SORs {
-		_, err = neo.gdb_create_nodes(SOR.Subject, SOR.SubjectType, SOR.Object, SOR.ObjectType)
+		_, err = neo.gdb_create_node(SOR.Subject, SOR.SubjectType)
+		_, err = neo.gdb_create_node(SOR.Object, SOR.ObjectType)
 		_, err = neo.gdb_create_relation(SOR.Subject, SOR.SubjectType, SOR.Object, SOR.ObjectType, SOR.Relation)
 	}
 
@@ -113,10 +114,10 @@ func (neo *Neo4j) gdb_create_relation(subject_name string, subject_type string, 
 	return nil, err
 }
 
-func (neo *Neo4j) gdb_create_nodes(subject_name string, subject_type string, object_name string, object_type string) (any, error) {
+func (neo *Neo4j) gdb_create_node(subject_name string, subject_type string) (any, error) {
 
 	_, err := neo.Session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-		result, err := tx.Run("MERGE (n:"+subject_type+" {name: '"+subject_name+"'}), MERGE (n:"+object_type+" {name: '"+object_name+"'})", nil)
+		result, err := tx.Run("MERGE (n:"+subject_type+" {name: '"+subject_name+"'})", nil)
 		if err != nil {
 			return nil, err
 		}
