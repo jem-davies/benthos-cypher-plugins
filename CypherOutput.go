@@ -40,7 +40,7 @@ func init() {
 		user, _ := conf.FieldString("User")
 		password, _ := conf.FieldString("Password")
 
-		return &Neo4j{Database: database, Uri: uri, User: user, Password: password}, 0, nil
+		return &Neo4j{Database: database, Uri: uri, User: user, Password: password}, 1, nil
 	}
 
 	err := service.RegisterOutput("cypher", configSpec, constructor)
