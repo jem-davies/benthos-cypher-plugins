@@ -49,14 +49,14 @@ Where input.json contains:
 
 ```json
 {
-    "SOR": "Subject,SubjectType,Object,ObjectType,Relation\nRemus,PERSON,Romulus,PERSON,brother\nRomulus,PERSON,Remus,PERSON,brother\nRemus,PERSON,Rome,CITY,founded_by\nRomulus,PERSON,Rome,CITY,founded_by"
+    "SOR": "Subject,SubjectType,Object,ObjectType,Relation\nRemus,PERSON,Romulus,PERSON,brother\nRomulus,PERSON,Remus,PERSON,brother\nRemus,PERSON,Rome,CITY,founded\nRomulus,PERSON,Rome,CITY,founded"
 }
 ```
 
 This should then produce the following graph in Neo4j: 
 
 ```
-        FOUNDED_BY       ┌───────┐
+        FOUNDED          ┌───────┐
     ┌────────────────────┤ROMULUS│
     │                    └─▲──┬──┘
     │                      │  │
@@ -66,7 +66,7 @@ This should then produce the following graph in Neo4j:
  └──▲─┘                   .│  │.
     │                      │  │
     │                      │  │
-    │   FOUNDED_BY       ┌─┴──▼─┐
+    │   FOUNDED          ┌─┴──▼─┐
     └────────────────────┤REMUS │
                          └──────┘
 ```
