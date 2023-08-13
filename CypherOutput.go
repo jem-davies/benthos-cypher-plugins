@@ -18,9 +18,11 @@ type Neo4j struct {
 }
 
 type subjectObjectRelationCsv struct {
-	Subject  string `csv:"Subject"` // struct tags are required for gocsv
-	Relation string `csv:"Relation"`
-	Object   string `csv:"Object"`
+	Subject     string `csv:"Subject"` // struct tags are required for gocsv
+	SubjectType string `csv:"SubjectType"`
+	Relation    string `csv:"Relation"`
+	Object      string `csv:"Object"`
+	ObjectType  string `csv:"ObjectType"`
 }
 
 var getNeoDriver = neo4j.NewDriver
@@ -84,7 +86,8 @@ func (neo *Neo4j) Write(ctx context.Context, msg *service.Message) error {
 	gocsv.UnmarshalString(collateTriples, &SORs)
 
 	for _, SOR := range SORs {
-		_, err = neo.gdb_create_relation(SOR.Subject, SOR.Object, SOR.Relation)
+		_, err = neo.gdb_create_nodes(SOR.Subject, SOR.SubjectType, SOR.Object, SOR.ObjectType)
+		_, err = neo.gdb_create_relation(SOR.Subject, SOR.SubjectType, SOR.Object, SOR.ObjectType, SOR.Relation)
 	}
 
 	return nil
@@ -96,10 +99,10 @@ func (neo *Neo4j) Close(ctx context.Context) error {
 	return nil
 }
 
-func (neo *Neo4j) gdb_create_relation(subject_name string, target_name string, relation_type string) (any, error) {
+func (neo *Neo4j) gdb_create_relation(subject_name string, subject_type string, object_name string, object_type string, relation_type string) (any, error) {
 
 	_, err := neo.Session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-		result, err := tx.Run("MATCH n,m WHERE n.name = '"+subject_name+"' AND m.name = '"+target_name+"' MERGE (n)-[l:"+relation_type+"]->(m)", nil)
+		result, err := tx.Run("MATCH (n:"+subject_type+"), (m:"+object_type+") WHERE n.name = '"+subject_name+"' AND m.name = '"+object_name+"' MERGE (n)-[l:"+relation_type+"]->(m)", nil)
 		if err != nil {
 			return nil, err
 		}
@@ -108,4 +111,18 @@ func (neo *Neo4j) gdb_create_relation(subject_name string, target_name string, r
 	})
 
 	return nil, err
+}
+
+func (neo *Neo4j) gdb_create_nodes(subject_name string, subject_type string, object_name string, object_type string) (any, error) {
+
+	_, err := neo.Session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run("MERGE (n:"+subject_type+" {name: '"+subject_name+"'}), MERGE (n:"+object_type+" {name: '"+object_name+"'})", nil)
+		if err != nil {
+			return nil, err
+		}
+		return result.Consume()
+	})
+
+	return nil, err
+
 }
