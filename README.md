@@ -55,7 +55,7 @@ Where input.json contains:
 
 This should then produce the following graph in Neo4j: 
 
-
+```
         FOUNDED_BY       ┌───────┐
     ┌────────────────────┤ROMULUS│
     │                    └─▲──┬──┘
@@ -69,6 +69,6 @@ This should then produce the following graph in Neo4j:
     │   FOUNDED_BY       ┌─┴──▼─┐
     └────────────────────┤REMUS │
                          └──────┘
-
+```
 
 
