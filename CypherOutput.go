@@ -94,7 +94,7 @@ func (neo *Neo4j) Write(ctx context.Context, msg *service.Message) error {
 		return err
 	}
 
-	collateTriples := content.(map[string]interface{})["TEST"].(string)
+	collateTriples := content.(map[string]interface{})["SOR"].(string)
 
 	SORs := []*subjectObjectRelationCsv{}
 	gocsv.UnmarshalString(collateTriples, &SORs)
