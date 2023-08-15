@@ -8,6 +8,7 @@ import (
 	"github.com/neo4j/neo4j-go-driver/neo4j"
 )
 
+// test
 type Neo4j struct {
 	Database string
 	Uri      string
