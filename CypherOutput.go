@@ -13,6 +13,7 @@ type Neo4j struct {
 	Uri      string
 	User     string
 	Password string
+	NoAuth   bool
 	Driver   neo4j.Driver
 	Session  neo4j.Session
 }
@@ -34,15 +35,17 @@ func init() {
 		Field(service.NewInterpolatedStringField("Database")).
 		Field(service.NewInterpolatedStringField("Uri")).
 		Field(service.NewInterpolatedStringField("User")).
-		Field(service.NewInterpolatedStringField("Password"))
+		Field(service.NewInterpolatedStringField("Password")).
+		Field(service.NewBoolField("NoAuth"))
 
 	constructor := func(conf *service.ParsedConfig, mgr *service.Resources) (out service.Output, maxInFlight int, err error) {
 		database, _ := conf.FieldString("Database")
 		uri, _ := conf.FieldString("Uri")
 		user, _ := conf.FieldString("User")
 		password, _ := conf.FieldString("Password")
+		noAuth, _ := conf.FieldBool("NoAuth")
 
-		return &Neo4j{Database: database, Uri: uri, User: user, Password: password}, 1, nil
+		return &Neo4j{Database: database, Uri: uri, User: user, Password: password, NoAuth: noAuth}, 1, nil
 	}
 
 	err := service.RegisterOutput("cypher", configSpec, constructor)
@@ -53,9 +56,20 @@ func init() {
 
 func (neo *Neo4j) Connect(ctx context.Context) error {
 
-	driver, err := getNeoDriver(neo.Uri, neo4j.NoAuth(), func(c *neo4j.Config) { c.Encrypted = false })
-	if err != nil {
-		return err
+	var driver neo4j.Driver
+
+	if neo.NoAuth {
+		d, err := getNeoDriver(neo.Uri, neo4j.NoAuth(), func(c *neo4j.Config) { c.Encrypted = false })
+		if err != nil {
+			return err
+		}
+		driver = d
+	} else {
+		d, err := getNeoDriver(neo.Uri, neo4j.BasicAuth(neo.User, neo.Password, ""), func(c *neo4j.Config) { c.Encrypted = false })
+		if err != nil {
+			return err
+		}
+		driver = d
 	}
 
 	neo.Driver = driver
